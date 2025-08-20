@@ -45,8 +45,7 @@ private val okHttpClient = OkHttpClient.Builder()
     .build()
 private val defaultHeaders = mapOf(
     "User-Agent" to
-            "Mozilla/5.0 (Linux; Android %s; %s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Mobile Safari/537.36"
-                .format(12, 2)
+            "Mozilla/5.0 (Linux; Android 12; 2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Mobile Safari/537.36"
 )
 val client = Requests(
     okHttpClient,
