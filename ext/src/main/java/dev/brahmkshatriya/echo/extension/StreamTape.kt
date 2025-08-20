@@ -14,7 +14,7 @@ class StreamTape : Extractor() {
             Streamable(
                 id = extractedUrl,
                 quality = 9001, // over 9000, hehe, get it?
-                mediaType = Streamable.MediaType.AudioVideo,
+                type = Streamable.MediaType.AudioVideo,
                 mimeType = Streamable.MimeType.Progressive,
             )
         )

@@ -20,9 +20,8 @@ class MegaCloud : Extractor() {
             Streamable(
                 id = it.file,
                 quality = 9001, // over 9000, hehe, get it?
-                mediaType = Streamable.MediaType.AudioVideo,
+                type = Streamable.MediaType.AudioVideo,
                 mimeType = type,
-//                extra = ,
             )
         }
         val subtitles: List<Streamable> = sources.tracks.mapNotNull {
@@ -35,9 +34,7 @@ class MegaCloud : Extractor() {
             Streamable.subtitle(
                 id = it.file,
                 title = it.label,
-//                extra = mapOf(
-//                    "kind" to it.kind,
-//                )
+                type = Streamable.SubtitleType.VTT,
             )
         }
         return videos + subtitles

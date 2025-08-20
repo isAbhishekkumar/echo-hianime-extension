@@ -3,7 +3,7 @@ package dev.brahmkshatriya.echo.extension
 import dev.brahmkshatriya.echo.common.clients.AlbumClient
 import dev.brahmkshatriya.echo.common.clients.ExtensionClient
 import dev.brahmkshatriya.echo.common.clients.HomeFeedClient
-import dev.brahmkshatriya.echo.common.clients.SearchClient
+import dev.brahmkshatriya.echo.common.clients.SearchFeedClient
 import dev.brahmkshatriya.echo.common.clients.TrackClient
 import dev.brahmkshatriya.echo.common.helpers.PagedData
 import dev.brahmkshatriya.echo.common.models.Album
@@ -12,9 +12,10 @@ import dev.brahmkshatriya.echo.common.models.EchoMediaItem.Companion.toMediaItem
 import dev.brahmkshatriya.echo.common.models.ImageHolder.Companion.toImageHolder
 import dev.brahmkshatriya.echo.common.models.MediaItemsContainer
 import dev.brahmkshatriya.echo.common.models.QuickSearchItem
+import dev.brahmkshatriya.echo.common.models.Shelf
 import dev.brahmkshatriya.echo.common.models.Streamable
-import dev.brahmkshatriya.echo.common.models.Streamable.Media.Companion.toAudioVideoMedia
-import dev.brahmkshatriya.echo.common.models.Streamable.Media.Companion.toSubtitleMedia
+import dev.brahmkshatriya.echo.common.models.Streamable.Companion.toAudioVideoMedia
+import dev.brahmkshatriya.echo.common.models.Streamable.Companion.toSubtitleMedia
 import dev.brahmkshatriya.echo.common.models.Tab
 import dev.brahmkshatriya.echo.common.models.Track
 import dev.brahmkshatriya.echo.common.settings.Setting
@@ -26,7 +27,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import java.util.Locale
 
-class HiAnimeExtension : ExtensionClient, SearchClient, AlbumClient, TrackClient, HomeFeedClient {
+class HiAnimeExtension : ExtensionClient, SearchFeedClient, AlbumClient, TrackClient, HomeFeedClient {
     private val hostUrl = "https://hianime.to"
 
     override suspend fun onExtensionSelected() {}
@@ -40,6 +41,14 @@ class HiAnimeExtension : ExtensionClient, SearchClient, AlbumClient, TrackClient
 
     override suspend fun deleteSearchHistory(query: QuickSearchItem.SearchQueryItem) {
         // do nothing
+    }
+
+    override suspend fun getShelves(album: Album): PagedData<Shelf> {
+        return PagedData.Single { listOf() }
+    }
+
+    override suspend fun getShelves(track: Track): PagedData<Shelf> {
+        return PagedData.Single { listOf() }
     }
 
     override suspend fun quickSearch(query: String?): List<QuickSearchItem> {
@@ -68,7 +77,7 @@ class HiAnimeExtension : ExtensionClient, SearchClient, AlbumClient, TrackClient
         }
     }
 
-    override fun searchFeed(query: String?, tab: Tab?) = PagedData.Single<MediaItemsContainer> {
+    override fun searchFeed(query: String?, tab: Tab?) = PagedData.Single<Shelf> {
         query ?: return@Single listOf()
         client.get("$hostUrl/search?keyword=${encode(query)}").document
             .select(".film_list-wrap > .flw-item").map {
@@ -85,7 +94,9 @@ class HiAnimeExtension : ExtensionClient, SearchClient, AlbumClient, TrackClient
                     cover = cover.toImageHolder(),
                     tracks = total,
                     subtitle = subtitle
-                ).toMediaItem().toMediaItemsContainer()
+                ).toMediaItem().let {
+                    Shelf.Lists.Albums(listOf(it))
+                }
             }
     }
 
@@ -95,7 +106,7 @@ class HiAnimeExtension : ExtensionClient, SearchClient, AlbumClient, TrackClient
     }
 
     // get related stuff
-    override fun getMediaItems(album: Album): PagedData<MediaItemsContainer> {
+    override fun getMediaItems(album: Album): PagedData<Shelf> {
         return PagedData.Single { listOf() }
     }
 
@@ -129,7 +140,7 @@ class HiAnimeExtension : ExtensionClient, SearchClient, AlbumClient, TrackClient
     }
 
     // get related media
-    override fun getMediaItems(track: Track): PagedData<MediaItemsContainer> {
+    override fun getMediaItems(track: Track): PagedData<Shelf> {
         return PagedData.Single { listOf() }
     }
 
@@ -166,7 +177,7 @@ class HiAnimeExtension : ExtensionClient, SearchClient, AlbumClient, TrackClient
         )
     }
 
-    override fun getHomeFeed(tab: Tab?): PagedData<MediaItemsContainer> = PagedData.Single {
+    override fun getHomeFeed(tab: Tab?): PagedData<Shelf> = PagedData.Single {
         client.get("$hostUrl/home").document.select(".anif-blocks .anif-block").map {
             val title = it.select(".anif-block-header").text()
             val anime: List<EchoMediaItem.Lists.AlbumItem> = it.select("li").map { animeEntry ->
@@ -184,10 +195,7 @@ class HiAnimeExtension : ExtensionClient, SearchClient, AlbumClient, TrackClient
                     tracks = tracks,
                 ).toMediaItem()
             }
-            MediaItemsContainer.Category(
-                title = title,
-                list = anime
-            )
+            Shelf.Lists.Albums(anime)
         }
     }
 

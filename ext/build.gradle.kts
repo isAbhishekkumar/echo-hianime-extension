@@ -22,7 +22,7 @@ kotlin {
 
 dependencies {
     val libVersion: String by project
-    compileOnly("com.github.brahmkshatriya:echo:$libVersion")
+    implementation("com.github.brahmkshatriya:echo:$libVersion")
     api("com.github.Blatzar:NiceHttp:0.4.11")
 
     api("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
